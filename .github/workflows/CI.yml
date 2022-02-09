@@ -45,6 +45,9 @@ jobs:
         echo DB_PASSWORD="${{ secrets.DB_PASSWORD }}" >> .env
         echo DB_HOST="${{ secrets.DB_HOST }}" >> .env
         echo REDIS_URL="${{ secrets.REDIS_URL }}" >> .env
+        echo ABS_API_KEY_EMAIL="${{ secrets.ABS_API_KEY_EMAIL }}" >> .env
+        echo ABS_API_KEY_GEO="${{ secrets.ABS_API_KEY_GEO }}" >> .env
+        echo ABS_API_KEY_HOLIDAY="${{ secrets.ABS_API_KEY_HOLIDAY }}" >> .env
         cat .env
     - name: Install Dependencies
       run: |
