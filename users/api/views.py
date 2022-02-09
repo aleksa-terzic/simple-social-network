@@ -1,34 +1,15 @@
 import json
 
-import requests
 from django.conf import settings
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from requests.adapters import HTTPAdapter
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from urllib3.util import Retry
+from src.retry import retry_session
 from users.models import User
 from users.tasks import enrich_user
 
 from .serializers import UserSerializer
-
-
-def retry_session(retries, session=None, backoff_factor=0.3):
-    session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        allowed_methods=False,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
-    return session
 
 
 def is_deliverable(email):
@@ -41,7 +22,7 @@ def is_deliverable(email):
 
 
 class SignupView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, format='json'):
         serializer = UserSerializer(data=request.data)
@@ -60,7 +41,7 @@ class SignupView(APIView):
 
 
 class GetUserData(APIView):
-    permission_classes = [IsAuthenticated]  # [IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]  # [IsAdminUser]
 
     def get(self, request, pk, format='json'):
         user = get_object_or_404(User, id=pk)

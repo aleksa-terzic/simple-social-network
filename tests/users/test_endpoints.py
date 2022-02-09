@@ -46,7 +46,6 @@ class TestUserEndpoints:
             "email": user.email,
             "password": "mypass"
         }
-        print(user.id)
         # get token
         token = api_client.post(url, data=login_data, format='json')
         assert token.data['access'] is not None

@@ -26,6 +26,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 ABS_API_KEY_EMAIL = config('ABS_API_KEY_EMAIL')
 ABS_API_KEY_GEO = config('ABS_API_KEY_GEO')
+ABS_API_KEY_HOLIDAY = config('ABS_API_KEY_HOLIDAY')
  
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
