@@ -6,8 +6,6 @@ from users.models import User
 
 from posts.models import Post
 
-pytestmark = pytest.mark.django_db
-
 
 class TestPostEndpoints:
 
@@ -18,28 +16,16 @@ class TestPostEndpoints:
         assert response.status_code == 200
         assert len(json.loads(response.content)) == 3
 
-    def test_create(self, api_client, pbb):
-        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
-        login_url = reverse('login')
-        login_data = {
-            "email": user.email,
-            "password": "mypass"
-        }
-        token = api_client.post(login_url, data=login_data, format='json')
-        assert token.data['access'] is not None
-
-        api_client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
-
+    def test_create(self, auth_api_client, pbb, user_1):
         post = pbb(1)[0]
         valid_data = {
-            'author': user.id,
+            'author': user_1.id,
             'title': post.title,
             'body': post.body
         }
-        url = reverse('posts_list')
 
-        response = api_client.post(url, valid_data, format='json')
+        url = reverse('posts_list')
+        response = auth_api_client.post(url, valid_data, format='json')
 
         assert response.status_code == 201
 
@@ -59,26 +45,14 @@ class TestPostEndpoints:
         expected_data.pop('author_id')
 
         url = reverse('post_detail', kwargs={'pk': post.id})
-
         response = api_client.get(url)
+
         data = json.loads(response.content)
 
         assert response.status_code == 200
         assert data == expected_data
 
-    def test_update_not_authorized(self, api_client, pb):
-        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
-        login_url = reverse('login')
-        login_data = {
-            "email": user.email,
-            "password": "mypass"
-        }
-        token = api_client.post(login_url, data=login_data, format='json')
-        assert token.data['access'] is not None
-
-        api_client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
-
+    def test_update_not_authorized(self, auth_api_client, pb, user_1):
         post = pb()
         updated_data = {
             "title": "New title",
@@ -86,26 +60,14 @@ class TestPostEndpoints:
         }
 
         url = reverse('post_detail', kwargs={'pk': post.id})
-        response = api_client.put(url, updated_data, format='json')
+        response = auth_api_client.put(url, updated_data, format='json')
 
         assert response.status_code == 401
-        assert user.id != post.author.id
+        assert user_1.id != post.author.id
 
-    def test_update(self, api_client):
-        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
+    def test_update(self, auth_api_client, user_1):
         post = Post.objects.create(
-            author=user, title="Old title", body="Old post body")
-
-        login_url = reverse('login')
-        login_data = {
-            "email": user.email,
-            "password": "mypass"
-        }
-        token = api_client.post(login_url, data=login_data, format='json')
-        assert token.data['access'] is not None
-
-        api_client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+            author=user_1, title="Old title", body="Old post body")
 
         updated_data = {
             "title": "New title",
@@ -113,30 +75,16 @@ class TestPostEndpoints:
         }
 
         url = reverse('post_detail', kwargs={'pk': post.id})
-
-        response = api_client.put(url, updated_data, format='json')
+        response = auth_api_client.put(url, updated_data, format='json')
 
         assert response.status_code == 200
-        assert user.id == post.author.id
+        assert user_1.id == post.author.id
 
-    def test_delete(self, api_client):
-        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
+    def test_delete(self, auth_api_client, user_1):
         post = Post.objects.create(
-            author=user, title="Old title", body="Old post body")
-
-        login_url = reverse('login')
-        login_data = {
-            "email": user.email,
-            "password": "mypass"
-        }
-        token = api_client.post(login_url, data=login_data, format='json')
-        assert token.data['access'] is not None
-
-        api_client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
-
+            author=user_1, title="Old title", body="Old post body")
         url = reverse('post_detail', kwargs={'pk': post.id})
 
-        response = api_client.delete(url, format='json')
+        response = auth_api_client.delete(url, format='json')
 
         assert response.status_code == 204

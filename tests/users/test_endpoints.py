@@ -40,22 +40,8 @@ class TestUserEndpoints:
         assert response.data['access'] is not None
         assert response.data['refresh'] is not None
 
-    def test_get_user_data(self, api_client):
-        # create user
-        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
-        url = reverse('login')
-        login_data = {
-            "email": user.email,
-            "password": "mypass"
-        }
-        # get token
-        token = api_client.post(url, data=login_data, format='json')
-        assert token.data['access'] is not None
-
-        api_client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
-
-        user_data_url = reverse('get_user_data', kwargs={'pk': user.id})
-        response = api_client.get(user_data_url, format='json')
+    def test_get_user_data(self, auth_api_client, user_1):
+        user_data_url = reverse('get_user_data', kwargs={'pk': user_1.id})
+        response = auth_api_client.get(user_data_url, format='json')
 
         assert response.status_code == 200
