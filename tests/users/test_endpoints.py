@@ -1,4 +1,3 @@
-from urllib import response
 import json
 
 import pytest
@@ -20,9 +19,12 @@ class TestUserEndpoints:
         response = api_client.post(url, data=data, format='json')
         body = json.loads(response.content)
 
+        user = User.objects.get(email='aleksa@gmail.com')
+
         assert response.status_code == 201
-        assert body['id'] is not None
-        assert body['email'] == data['email']
+        assert body['id'] == user.id
+        assert body['email'] == user.email
+        assert body['profile']['user'] == user.id
 
     def test_login(self, api_client):
         # create user

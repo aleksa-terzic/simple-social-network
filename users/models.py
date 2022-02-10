@@ -27,8 +27,11 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.email
 
+def create_profile(user):
+    Profile.objects.create(user=user)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        create_profile(instance)
+

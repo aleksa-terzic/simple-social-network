@@ -2,7 +2,6 @@ import json
 
 import pytest
 from django.urls import reverse
-from model_bakery import baker
 from users.models import User
 
 from posts.models import Post
@@ -67,3 +66,77 @@ class TestPostEndpoints:
         assert response.status_code == 200
         assert data == expected_data
 
+    def test_update_not_authorized(self, api_client, pb):
+        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
+        login_url = reverse('login')
+        login_data = {
+            "email": user.email,
+            "password": "mypass"
+        }
+        token = api_client.post(login_url, data=login_data, format='json')
+        assert token.data['access'] is not None
+
+        api_client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+
+        post = pb()
+        updated_data = {
+            "title": "New title",
+            "body": "New body"
+        }
+
+        url = reverse('post_detail', kwargs={'pk': post.id})
+        response = api_client.put(url, updated_data, format='json')
+
+        assert response.status_code == 401
+        assert user.id != post.author.id
+
+    def test_update(self, api_client):
+        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
+        post = Post.objects.create(
+            author=user, title="Old title", body="Old post body")
+
+        login_url = reverse('login')
+        login_data = {
+            "email": user.email,
+            "password": "mypass"
+        }
+        token = api_client.post(login_url, data=login_data, format='json')
+        assert token.data['access'] is not None
+
+        api_client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+
+        updated_data = {
+            "title": "New title",
+            "body": "New body"
+        }
+
+        url = reverse('post_detail', kwargs={'pk': post.id})
+
+        response = api_client.put(url, updated_data, format='json')
+
+        assert response.status_code == 200
+        assert user.id == post.author.id
+
+    def test_delete(self, api_client):
+        user = User.objects.create_user('aleksa@gmail.com', 'mypass')
+        post = Post.objects.create(
+            author=user, title="Old title", body="Old post body")
+
+        login_url = reverse('login')
+        login_data = {
+            "email": user.email,
+            "password": "mypass"
+        }
+        token = api_client.post(login_url, data=login_data, format='json')
+        assert token.data['access'] is not None
+
+        api_client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + token.data['access'])
+
+        url = reverse('post_detail', kwargs={'pk': post.id})
+
+        response = api_client.delete(url, format='json')
+
+        assert response.status_code == 204

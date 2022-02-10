@@ -57,8 +57,9 @@ Tests should now execute and you will be able to see the results and coverage of
 | Action        | URL           | Method  |
 | ------------- |:-------------:| -----:|
 | User Signup      | /api/users/signup | POST |
-| User Login     | /api/users/login/      |   POST |
-| Get User Data | /api/users/<int:pk>/data/      |    GET |
+| User Login/Obtain Token     | /api/users/token/      |   POST |
+| Refresh Token     | /api/users/token/refresh/      |   POST |
+| Get User Data | /api/users/<int:pk>/      |    GET |
 | Get Post List | /api/posts/      |    GET |
 | Create Post | /api/posts/      |    POST |
 | Get Post | /api/posts/<int:pk>/      |    GET |
